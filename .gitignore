@@ -1,3 +1,10 @@
+# Ignorar entornos virtuales
+venv-PDI-TP
+venv/
+.env/
+env/
+.venv/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
