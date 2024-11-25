@@ -59,7 +59,7 @@ n = 0 # Numero de auto para ir visualizando
 # 1 # Cargamos las imagenes y las almacenamos en una lista
 imgs = []
 for i in range(1,13):
-    img = cv2.imread("img" + str(i).zfill(2) + ".png")
+    img = cv2.imread(r'Imagenes de Entrada\img' + str(i).zfill(2) + '.png')
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     imgs.append(img)
 
