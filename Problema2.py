@@ -64,12 +64,13 @@ for i in range(1,13):
     imgs.append(img)
 
 # 1.1 # Visualizamos el resultado
-titles = []
+titlesO = []
 for i in range(1,13):
-    titles.append("Auto " + str(i))
+    titlesO.append("Auto " + str(i))
 
+# Autos
 # imshow(imgs[n])
-subplot12(imgs,titles)
+subplot12(imgs,titlesO)
 
 
 # 2 # Pasamos a escala de grises
@@ -78,12 +79,13 @@ for img in imgs:
     grays.append(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
 
 # 2.1 # Visualizamos el resultado
-titles = []
+titlesG = []
 for i in range(1,13):
-    titles.append("Escala de grises Auto " + str(i))
+    titlesG.append("Escala de grises Auto " + str(i))
 
+# Autos
 # imshow(grays[n])
-subplot12(grays,titles)
+subplot12(grays,titlesG)
 
 # 3 # Calculamos manualmente ROIs para visualizar mejor la zona de interes (patentes)
 
@@ -115,12 +117,14 @@ def recortes(imgs, coords = None):
     return recortes
 
 # 3.2 # Visualizamos el resultado
-titles = []
+titlesPG = []
 for i in range(1,13):
-    titles.append("Escala de grises Patente" + str(i))
-patentes = recortes(grays)
+    titlesPG.append("Recorte Patente" + str(i))
+
+# Patentes
 # imshow(patentes[n])
-subplot12(patentes,titles)
+patentes = recortes(grays)
+subplot12(patentes,titlesPG)
 
 # 4 #Aplicamos filtro high boost para resaltar caracteres de las patentes
 
@@ -133,14 +137,25 @@ for gray in grays:
     grays_hb.append(cv2.filter2D(gray,-1,w))
 
 # 4.2 # Visualizamos el resultado
-titles = []
+titlesHB = []
 for i in range(1,13):
-    titles.append("High boost Patente " + str(i))
+    titlesHB.append("High boost Auto " + str(i))
+
+titlesPHB = []
+for i in range(1,13):
+    titlesPHB.append("High boost Patente " + str(i))
+
+# Autos
+# imshow(grays_hb[n])
+subplot12(grays,titlesG) 
+subplot12(grays_hb,titlesHB) #Generar los 2 subplot 12, maximizar las pestañas, intercambiar y ver el resultado
+
+# Patentes
 patentes1 = recortes(grays)
 patentes2 = recortes(grays_hb)
-# imshow(patentes[n])
-subplot12(patentes1,titles)
-subplot12(patentes2,titles)
+# imshow(patentes2[n])
+subplot12(patentes1,titlesPG) 
+subplot12(patentes2,titlesPHB) #Generar los 2 subplot 12, maximizar las pestañas, intercambiar y ver el resultado
 
 
 # 5 # Umbralizamos la imagen con el threshold adecuado
@@ -152,19 +167,33 @@ for gray in grays_hb:
     _, img_bin = cv2.threshold(gray, TH1, 1, cv2.THRESH_BINARY)
     imgs_th.append(img_bin)
 
-titles = []
+# 5.1 # Visualizamos el resultado
+
+titlesTH = []
 for i in range(1,13):
-    titles.append("Auto " + str(i) + " - Threshold > " + str(TH1))
+    titlesTH.append("Auto " + str(i) + " - Threshold > " + str(TH1))
 
+titlesPTH = []
+for i in range(1,13):
+    titlesPTH.append("Patente " + str(i) + " - Threshold > " + str(TH1))
+
+# Autos
 # imshow(imgs_th[n])
-subplot12(imgs_th,titles)
-patentes = recortes(imgs_th)
-subplot12(patentes,titles)
+subplot12(grays_hb,titlesHB)
+subplot12(imgs_th,titlesTH) #Generar los 2 subplot 12, maximizar las pestañas, intercambiar y ver el resultado
+
+# Patentes
+patentes1 = recortes(grays_hb)
+patentes2 = recortes(imgs_th)
+
+subplot12(patentes1,titlesPHB)
+subplot12(patentes2,titlesPTH) #Generar los 2 subplot 12, maximizar las pestañas, intercambiar y ver el resultado
 
 
+# 6 # Filtramos por area las componentes conectadas
 
-imgs_th_fA = [img.copy() for img in imgs_th]
-for img in imgs_th_fA:
+imgs_th_fA_fRA = [img.copy() for img in imgs_th]
+for img in imgs_th_fA_fRA:
     connectivity = 8
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity, cv2.CV_32S)  
     TH1 = 18 #Justo para detectar bien todos los caracteres (con 1 mas pierdo caracteres)
@@ -180,24 +209,33 @@ for img in imgs_th_fA:
         if (area < TH1 or area > TH2) or (relAsp < RA1 or relAsp > RA2):
             img[labels==i] = 0
 
-titles = []
+
+# 6.1 # Visualizamos el resultado
+
+titles_fA_fRA = []
 for i in range(1,13):
-    titles.append("Auto " + str(i) + " Filrado por area entre [" + str(TH1) + ", " + str(TH2) + "]" )
+    titles_fA_fRA.append(str(TH1) + " > Area > " + str(TH2) + " - " + str(RA1) + " > Rel. Asp > " + str(RA2))
 
-subplot12(imgs_th_fA,titles)
-patentes = recortes(imgs_th_fA)
-subplot12(patentes,titles)
+# Autos
+subplot12(imgs_th,titlesTH)
+subplot12(imgs_th_fA_fRA,titles_fA_fRA) #Generar los 2 subplot 12, maximizar las pestañas, intercambiar y ver el resultado
 
-# 6 # Calculamos nuevamentes las componentes conectadas y filtramos por grupos
-#  de 3 componentes cercanas horizontalmente
-imgs_th_fA_fg = [img.copy() for img in imgs_th_fA]
-for img in imgs_th_fA_fg:
+# Patentes
+patentes1 = patentes2
+patentes2 = recortes(imgs_th_fA_fRA)
+
+subplot12(patentes1,titlesPTH)
+subplot12(patentes2,titles_fA_fRA) #Generar los 2 subplot 12, maximizar las pestañas, intercambiar y ver el resultado
+
+# 7 # Calculamos nuevamentes las componentes conectadas y filtramos por grupos
+#  de 3 componentes cercanas horizontalmente y verticalmente
+imgs_th_fA_fRA_fG = [img.copy() for img in imgs_th_fA_fRA]
+for img in imgs_th_fA_fRA_fG:
     connectivity = 8
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity, cv2.CV_32S)
     #Ordeno stats segun la coordenada izquierda de menor a mayor
     sorted_indices = np.argsort(stats[:, cv2.CC_STAT_LEFT])  # Índices que ordenan por la coordenada izquierda
     stats = stats[sorted_indices]  # Ordeno stats según la coordenada izquierda
-    # labels = labels[sorted_indices]  # Ordeno las etiquetas de acuerdo con la nueva ordenación de stats
     new_labels = np.zeros_like(labels)  # Creamos una nueva matriz de etiquetas del mismo tamaño
     for i, idx in enumerate(sorted_indices):
         new_labels[labels == idx] = i
@@ -206,24 +244,29 @@ for img in imgs_th_fA_fg:
     dist_max_v = 5
     # Lista para guardar los grupos de 3 componentes cercanos
     indices = []
-    for i in range(num_labels - 2):  # Verificamos grupos de 3
-        i2 = i + 1
-        i3 = i + 2
-        x1 = stats[i, cv2.CC_STAT_LEFT]
-        x2 = stats[i2, cv2.CC_STAT_LEFT]
-        x3 = stats[i3, cv2.CC_STAT_LEFT]
-        y1 = stats[i, cv2.CC_STAT_TOP]
-        y2 = stats[i2, cv2.CC_STAT_TOP]
-        y3 = stats[i3, cv2.CC_STAT_TOP]
-        distH_1_2 = x2 - x1 <= dist_max_h
-        distH_2_3 = x3 - x2 <= dist_max_h
-        distV_1_2 = abs(y2 - y1) <= dist_max_v  
-        distV_2_3 = abs(y3 - y2) <= dist_max_v
-        # Verificar si las distancias entre componentes consecutivos son menores al umbral
-        if distH_1_2 and distH_2_3 and distV_1_2 and distV_2_3: #SE PUEDE AGREGAR QUE VERIFIQUE LA ALTURA EN UN UMBRAL PARA MEJORAR ESTO
-            indices += [i, i2, i3]
-        if len(indices) == 6: #Si obtengo 2 grupos de 3 componentes(caracteres) termino
-            break
+    intentos = 3
+    while len(indices) < 6 and intentos >= 0: #Si no obtengo 6 caracteres bajo el umbral de distancia horizontal durante 5 intentos
+        print(dist_max_h)
+        for i in range(num_labels - 2):  # Verificamos grupos de 3
+            i2 = i + 1
+            i3 = i + 2
+            x1 = stats[i, cv2.CC_STAT_LEFT]
+            x2 = stats[i2, cv2.CC_STAT_LEFT]
+            x3 = stats[i3, cv2.CC_STAT_LEFT]
+            y1 = stats[i, cv2.CC_STAT_TOP]
+            y2 = stats[i2, cv2.CC_STAT_TOP]
+            y3 = stats[i3, cv2.CC_STAT_TOP]
+            distH_1_2 = x2 - x1 <= dist_max_h
+            distH_2_3 = x3 - x2 <= dist_max_h
+            distV_1_2 = abs(y2 - y1) <= dist_max_v  
+            distV_2_3 = abs(y3 - y2) <= dist_max_v
+            # Verificar si las distancias entre componentes consecutivos son menores al umbral
+            if distH_1_2 and distH_2_3 and distV_1_2 and distV_2_3 and i not in indices:
+                indices += [i, i2, i3]
+            if len(indices) == 6: #Si obtengo 2 grupos de 3 componentes(caracteres) termino
+                break
+        dist_max_h -= 1
+        intentos -= 1
     # Elimino las componentes que no correspondan a los indices de los grupos de 3
     for i in range(num_labels):
         # print(i)
@@ -231,6 +274,79 @@ for img in imgs_th_fA_fg:
             print(i)
             img[new_labels==i] = 0
 
-subplot12(imgs_th_fA_fg,titles)
-patentes = recortes(imgs_th_fA_fg)
-subplot12(patentes,titles)
+# 7.1 # Visualizamos el resultado
+titles_fA_fRA_fG = []
+for i in range(1,13):
+    titles_fA_fRA_fG.append("Auto " + str(i) + "- Filtro grupos 3 cercanos")
+
+titlesP_fA_fRA_fG = []
+for i in range(1,13):
+    titlesP_fA_fRA_fG.append("Patente " + str(i) + "- Filtro grupos 3 cercanos")
+
+# Autos
+subplot12(imgs_th_fA_fRA,titles_fA_fRA)
+subplot12(imgs_th_fA_fRA_fG,titles_fA_fRA_fG)
+
+# Patentes
+patentes1 = recortes(imgs_th_fA_fRA)
+patentes2 = recortes(imgs_th_fA_fRA_fG)
+subplot12(patentes1,titles_fA_fRA)
+subplot12(patentes2,titlesP_fA_fRA_fG)
+
+# 8 # Calculamos nuevamente componentes conectadas y guardamos coordenadas de referencia
+coords = []
+for img in imgs_th_fA_fRA_fG:
+    connectivity = 8
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity, cv2.CV_32S)
+    # Guardamos la coordenada del punto medio derecho de la primer letra 
+    x = stats[1, cv2.CC_STAT_LEFT] + stats[1, cv2.CC_STAT_WIDTH]
+    y = stats[1, cv2.CC_STAT_TOP]
+    y = y + stats[1, cv2.CC_STAT_HEIGHT] / 2 
+    coords.append((x,y))
+    
+# 9 # Dilatamos las letras para hacerlas mas gruesas
+patentes_dil = []
+for img in imgs_th_fA_fRA_fG_dil:
+    L = 5
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (L, L) )
+    img = cv2.dilate(img, kernel, iterations=1)
+    patentes_dil.append(img)
+
+
+titlesPD = []
+for i in range(1,13):
+    titlesPD.append("Patente " + str(i) + " - Dilatado con circulo radio " + str(L))
+
+patentes = recortes(patentes_dil)
+subplot12(patentes,titlesPD)
+
+# 8 # Filtrado inverso para detectar pixels negros de la imagen
+
+TH2 = 15 # Justo para detectar todos los caracteres sin que se rompan
+imgs_th_black = []
+
+for gray in grays_hb:
+    _, img_bin = cv2.threshold(gray, TH2, 1, cv2.THRESH_BINARY_INV)
+    imgs_th_black.append(img_bin)
+
+
+# 8.1 # Visualizamos el resultado
+
+titlesTHB = []
+for i in range(1,13):
+    titlesTHB.append("Auto " + str(i) + " - Threshold < " + str(TH2))
+
+subplot12(imgs_th_black,titlesTHB)
+patentes = recortes(imgs_th_black)
+subplot12(patentes,titlesTHB)
+
+
+# combinamos resultados anteriores con una union
+patentesT = []
+for i in range(len(imgs_th_black)):
+    mask1 = patentes_dil[i]
+    mask2 = imgs_th_black[i]
+    patentesT.append(cv2.bitwise_or(mask1, mask2))
+
+patentes = recortes(patentesT)
+subplot12(patentes,titlesTHB)
