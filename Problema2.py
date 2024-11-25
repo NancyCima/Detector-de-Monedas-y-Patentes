@@ -11,16 +11,8 @@ import cv2
 --------------------------------------------------------------------------------
 
 El presente trabajo se basa en el procesamiento de 12 imagenes que contienen un auto
-para detectar y segmentar automaticamente la patente del auto en cuestion
+para detectar y segmentar automaticamente la patente del auto en cuestion.
 
-ADECUAR LO SIGUIENTE
-El codigo se divide en dos partes correspondientes a las siguientes funciones:
-
-    # monedas : Encargada de clasificar las monedas, identificarlas e informar el resultado
-    # dados : Encargada de identificar los dados, su valor e informar el resultado
-
-Por último, se obtiene un resultado final con la combinacion de la salida de 
-ambas funciones, identificando monedas y dados en una imagen final
 """
 
 def imshow(img, new_fig=True, title=None, color_img=False, blocking=False, colorbar=False, ticks=False):
@@ -293,60 +285,17 @@ patentes2 = recortes(imgs_th_fA_fRA_fG)
 subplot12(patentes1,titles_fA_fRA)
 subplot12(patentes2,titlesP_fA_fRA_fG)
 
-# 8 # Calculamos nuevamente componentes conectadas y guardamos coordenadas de referencia
+# 8 # Calculamos nuevamente componentes conectadas, guardamos coordenadas y 
+# creamos bounding box en imagen original
 coords = []
 for img in imgs_th_fA_fRA_fG:
     connectivity = 8
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(img, connectivity, cv2.CV_32S)
     # Guardamos la coordenada del punto medio derecho de la primer letra 
-    x = stats[1, cv2.CC_STAT_LEFT] + stats[1, cv2.CC_STAT_WIDTH]
-    y = stats[1, cv2.CC_STAT_TOP]
-    y = y + stats[1, cv2.CC_STAT_HEIGHT] / 2 
-    coords.append((x,y))
-    
-# 9 # Dilatamos las letras para hacerlas mas gruesas
-patentes_dil = []
-for img in imgs_th_fA_fRA_fG_dil:
-    L = 5
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (L, L) )
-    img = cv2.dilate(img, kernel, iterations=1)
-    patentes_dil.append(img)
-
-
-titlesPD = []
-for i in range(1,13):
-    titlesPD.append("Patente " + str(i) + " - Dilatado con circulo radio " + str(L))
-
-patentes = recortes(patentes_dil)
-subplot12(patentes,titlesPD)
-
-# 8 # Filtrado inverso para detectar pixels negros de la imagen
-
-TH2 = 15 # Justo para detectar todos los caracteres sin que se rompan
-imgs_th_black = []
-
-for gray in grays_hb:
-    _, img_bin = cv2.threshold(gray, TH2, 1, cv2.THRESH_BINARY_INV)
-    imgs_th_black.append(img_bin)
-
-
-# 8.1 # Visualizamos el resultado
-
-titlesTHB = []
-for i in range(1,13):
-    titlesTHB.append("Auto " + str(i) + " - Threshold < " + str(TH2))
-
-subplot12(imgs_th_black,titlesTHB)
-patentes = recortes(imgs_th_black)
-subplot12(patentes,titlesTHB)
-
-
-# combinamos resultados anteriores con una union
-patentesT = []
-for i in range(len(imgs_th_black)):
-    mask1 = patentes_dil[i]
-    mask2 = imgs_th_black[i]
-    patentesT.append(cv2.bitwise_or(mask1, mask2))
-
-patentes = recortes(patentesT)
-subplot12(patentes,titlesTHB)
+    x1 = np.min(stats[:, cv2.CC_STAT_LEFT])
+    y1 = np.max(stats[:, cv2.CC_STAT_TOP])
+    argmax = np.argmax(stats[:, cv2.CC_STAT_LEFT])
+    x2 = stats[argmax, cv2.CC_STAT_LEFT] + stats[argmax, cv2.CC_STAT_WIDTH]
+    argmin = np.argmin(stats[:, cv2.CC_STAT_TOP])
+    y2 = stats[argmax, cv2.CC_STAT_TOP] + stats[argmax, cv2.CC_STAT_HEIGHT]
+    coords.append((x1,x2,y1,y2))
