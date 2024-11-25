@@ -238,7 +238,7 @@ for img in imgs_th_fA_fRA_fG:
     indices = []
     intentos = 3
     while len(indices) < 6 and intentos >= 0: #Si no obtengo 6 caracteres bajo el umbral de distancia horizontal durante 5 intentos
-        print(dist_max_h)
+        #print(dist_max_h)
         for i in range(num_labels - 2):  # Verificamos grupos de 3
             i2 = i + 1
             i3 = i + 2
